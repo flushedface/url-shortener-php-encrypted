@@ -1,0 +1,29 @@
+
+@keyframes fade-in {
+  0% {
+    transform: scaleX(800%);
+  }
+
+  50% {
+    transform: rotateX(45deg);
+    transform: scaleX(-100%);
+  }
+
+  100% {}
+}
+
+@keyframes breathe {
+  0% {
+    transform: scaleX(100%);
+  }
+
+  50% {
+    transform: scaleX(130%);
+    filter: blur(4px);
+  }
+
+  100% {
+    transform: scaleX(100%);
+    
+  }
+}
