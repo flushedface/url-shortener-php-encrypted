@@ -12,11 +12,21 @@
     <meta name="author" content="url shortener">
     <title><?php echo SITE_NAME; ?></title>
     <link rel="stylesheet" href="assets/css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/jsencrypt@latest/bin/jsencrypt.min.js"></script>
+    <script src="script.js"></script>
 </head>
 <body>
 <br>
+    <section>
+  <div class="wave">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</section>
 <center>
     <h1><?php echo SITE_NAME; ?></h1>
+
     <?php
     if (isset($_SESSION['success'])) {
         echo "<p class='success'>" . $_SESSION['success'] . "</p>";
@@ -26,50 +36,25 @@
         echo "<p class='alert'>" . $_SESSION['error'] . "</p>";
         unset($_SESSION['error']);
     }
-    if (isset($_GET['error']) && $_GET['error'] == 'db') {
-        echo "<p class='alert'>Error in connecting to database!</p>";
-    }
-    if (isset($_GET['error']) && $_GET['error'] == 'inurl') {
-        echo "<p class='alert'>Not a valid URL!</p>";
-    }
-    if (isset($_GET['error']) && $_GET['error'] == 'dnp') {
-        echo "<p class='alert'>Ok! So I got to know you love playing! But don't play here!!!</p>";
-    }
     ?>
+
+
+    <div class="section group">
+        <div class="col span_3_of_3">
+                <input type="url" id="input" class="input" placeholder="Enter a URL or Text here" oninput="crypt_url()">
+        </div>
+    </div>
+
     <form method="POST" action="functions/shorten.php">
         <div class="section group">
             <div class="col span_3_of_3">
-                <input type="url" id="input" name="url" class="input" placeholder="Enter a URL here">
-            </div>
-            <div class="col span_1_of_3">
-                <input type="text" id="custom" name="custom" class="input_custom" placeholder="Enable custom text"
-                       disabled>
-            </div>
-            <div class="col span_2_of_3">
-                <div class="onoffswitch">
-                    <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch"
-                           onclick="toggle()">
-                    <label class="onoffswitch-label" for="myonoffswitch"></label>
-                </div>
+                <input type="submit" value="Short" class="submit">
             </div>
         </div>
-        <input type="submit" value="Go" class="submit">
+        <input disabled id="cinput" name="url" class="input">
     </form>
-    <script>
-      function toggle () {
-        if (document.getElementById('myonoffswitch').checked) {
-          document.getElementById('custom').placeholder = 'Enter your custom text'
-          document.getElementById('custom').disabled = false
-          document.getElementById('custom').focus()
-        }
-        else {
-          document.getElementById('custom').value = ''
-          document.getElementById('custom').placeholder = 'Enable custom text'
-          document.getElementById('custom').disabled = true
-          document.getElementById('custom').blur()
-          document.getElementById('input').focus()
-        }
-      }
-    </script>
+
+    <p>All Content is Encrypted</p>
+</center>
 </body>
 </html>

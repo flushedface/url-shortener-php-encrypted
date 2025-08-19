@@ -28,10 +28,10 @@ SET time_zone = "+00:00";
 
 CREATE TABLE IF NOT EXISTS `link` (
   `id` int(11) NOT NULL,
-  `url` varchar(1000) DEFAULT NULL,
-  `code` varchar(20) DEFAULT NULL,
+  `url` varchar(345) DEFAULT NULL,
+  `code` varchar(12) DEFAULT NULL,
   `created` timestamp NULL DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Indexes for dumped tables
