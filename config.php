@@ -4,14 +4,14 @@
 
 if ( !defined('SITE_NAME') )
 {
-    define('SITE_NAME', "2hrt");
+    define('SITE_NAME', "2cryp.rip");
 }
 
 // URL LOCATION (Don't forget "/" at the end !)
 
 if ( !defined('BASE_URL') )
 {
-    define('BASE_URL', "http://8080-cs-53104562894-default.cs-europe-west1-onse.cloudshell.dev/");
+    define('BASE_URL', "https://8080-cs-53104562894-default.cs-europe-west1-onse.cloudshell.dev/");
 }
 
 // DATABASE CONFIGURATION
@@ -27,7 +27,7 @@ if ( !defined('DB_NAME') )
 
 if ( !defined('USER_NAME') )
 {
-    define('USER_NAME', "root");
+    define('USER_NAME', "root"); # pBKpMCy22vEeyl9K
 }
 
 if ( !defined('USER_PASSWORD') )

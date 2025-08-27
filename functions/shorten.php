@@ -1,24 +1,24 @@
 <?php
-
 session_start();
 
 require_once(__DIR__."/../config.php");
 require_once(__DIR__."/UrlShortener.php");
 
-$errors       = false;
-
 $urlShortener = new UrlShortener();
 
-if (isset($_POST['url']) && !$errors) {
-    $orignalURL = $_POST['url'];
+if (isset($_POST['crypt']) && !$errors) {
+    $orignalURL = $_POST['crypt'];
     
-    if ($uniqueCode = $urlShortener->validateUrlAndReturnCode($orignalURL)) {
-            $_SESSION['success'] = $urlShortener->generateLinkForShortURL($uniqueCode);
-    }
+    $uniqueCode = $urlShortener->validateUrlAndReturnCode($orignalURL);
 
-    $_SESSION['error'] = "There was a problem. Invalid URL, perhaps?";
+    if (!$uniqueCode) {
+            $_SESSION['error'] = "There was a problem. Invalid URL, perhaps?";
+    }
+    else {
+        $_SESSION['success'] = $urlShortener->generateLinkForShortURL($uniqueCode);
+    }
 }
 
-header("Location: ../index.php");
-exit();
+
+header(sprintf("Location: %s/index.php", BASE_URL));
 ?>

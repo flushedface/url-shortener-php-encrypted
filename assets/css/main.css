@@ -58,7 +58,7 @@ h1 {
 
 .alert {
     z-index: 100;
-    position: fixed;
+    position: relative;
     font-size: 14px;
     color: #000;
     margin-bottom: 30px;
@@ -70,6 +70,7 @@ h1 {
 }
 
 .success {
+    position: relative;
     font-size: 14px;
     color: #000;
     margin-bottom: 30px;

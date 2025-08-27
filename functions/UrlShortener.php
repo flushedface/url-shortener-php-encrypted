@@ -3,22 +3,20 @@
 require_once("../config.php");
 
 class UrlShortener {
+    protected $cache = array();
     protected $db;
     
     public function __construct() {
-        $this->db = new PDO("mysql:host=localhost;dbname=short", USER_NAME, USER_PASSWORD, array(
-            PDO::ATTR_PERSISTENT => true
-        ));
+        $this->db = new PDO(sprintf("mysql:host=localhost;dbname=%s", DB_NAME), USER_NAME, USER_PASSWORD, array());
     }
     
     /**
-     * Generates unique code for each URLsd
+     * Creates MD5 hash out of the encrypted url and substrings the first 8 characters
      *
      * @param string $orignalURL
      *
      * @return string
      */
-
     public function generateUniqueCode($orignalURL) {
         return substr(md5($orignalURL . microtime()), 0, 8);
     }
@@ -28,24 +26,27 @@ class UrlShortener {
     }
 
     /**
-     * Validates URL, checks if already present in database and finally inserts
-     * in database
+     * Stores encrypted url in database and returns the unique code
      *
      * @param string $url Real Url
      *
      * @return string
      */
     
-    public function validateUrlAndReturnCode($orignalURL) { 
-        $insertInDatabase  = 'INSERT INTO link (url,code,created) VALUES (:og_url,:u_code,NOW())';
-
+    public function validateUrlAndReturnCode($orignalURL) {#
+        // Check if string is valid crypt
+        if(strlen($orignalURL) > 264) { 
+            return;
+        }
         $uniqueCode = $this->generateUniqueCode("$orignalURL");
+
+        $cache[] = array($uniqueCode => [session_id(),$orignalURL]);
+
+        // ? are placeholders for the query command
+        $insertInDatabase  = "INSERT INTO link (url,code,created) VALUES (?,?,NOW())";
             
         $query = $this->prepare($insertInDatabase);
-        $query->bindValue(':og_url', $orignalURL);
-        $query->bindValue(':u_code', $uniqueCode);
-        $query->execute();
-            
+        $query->execute([$orignalURL, $uniqueCode]);
         return $uniqueCode;
     }
     
@@ -58,11 +59,15 @@ class UrlShortener {
      */
     
     public function getOrignalURL($string) {
-        $rows   = "SELECT url FROM link WHERE code = 'pCODE'";
+        if($url == $cache[$string]) {
+            return $url;
+        }
 
-        $query = $this->prepare($insertInDatabase);
-        $query->execute(['pCODE' => "$string"]);
-        $rows  = $query->fetchAll();
+        $sql = "SELECT url FROM link WHERE code = ?";
+
+        $query = $this->prepare($sql);
+        $query->execute([$string]);
+        $rows = $query->fetchAll();
         
         return $rows[0]['url'];
     }
