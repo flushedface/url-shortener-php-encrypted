@@ -13,12 +13,12 @@ class UrlShortener {
     /**
      * Creates MD5 hash out of the encrypted url and substrings the first 8 characters
      *
-     * @param string $orignalURL
+     * @param string $cryptData
      *
      * @return string
      */
-    public function generateUniqueCode($orignalURL) {
-        return substr(md5($orignalURL . microtime()), 0, 8);
+    public function generateUniqueCode($cryptData) {
+        return substr(md5($cryptData . microtime()), 0, 8);
     }
     
     private function prepare($insertInDatabase) {
@@ -33,20 +33,21 @@ class UrlShortener {
      * @return string
      */
     
-    public function validateUrlAndReturnCode($orignalURL) {#
+    public function validateUrlAndReturnCode($cryptData) {#
         // Check if string is valid crypt
-        if(strlen($orignalURL) > 264) { 
+        if(strlen($cryptData) > 264) { 
             return;
         }
-        $uniqueCode = $this->generateUniqueCode("$orignalURL");
 
-        $cache[] = array($uniqueCode => [session_id(),$orignalURL]);
+        $uniqueCode = $this->generateUniqueCode($cryptData);
+
+        $cache[] = array($uniqueCode => [session_id(),$cryptData]);
 
         // ? are placeholders for the query command
         $insertInDatabase  = "INSERT INTO link (url,code,created) VALUES (?,?,NOW())";
             
         $query = $this->prepare($insertInDatabase);
-        $query->execute([$orignalURL, $uniqueCode]);
+        $query->execute([$cryptData, $uniqueCode]);
         return $uniqueCode;
     }
     
@@ -58,15 +59,15 @@ class UrlShortener {
      * @return string
      */
     
-    public function getOrignalURL($string) {
-        if($url == $cache[$string]) {
+    public function getOrignalURL($uniqueCode) {
+        if($url == $cache[$uniqueCode]) {
             return $url;
         }
 
         $sql = "SELECT url FROM link WHERE code = ?";
 
         $query = $this->prepare($sql);
-        $query->execute([$string]);
+        $query->execute([$uniqueCode]);
         $rows = $query->fetchAll();
         
         return $rows[0]['url'];

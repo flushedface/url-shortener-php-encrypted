@@ -1,14 +1,16 @@
 import brotliCompress from 'https://esm.run/brotli-unicode'
+import buffer from 'https://cdn.jsdelivr.net/npm/buffer/+esm'
+import toBuffer from 'https://cdn.jsdelivr.net/npm/typedarray-to-buffer/+esm'
+import config from "./config.js";
 
-document.brotliCompress = brotliCompress;
+let Buffer = buffer.Buffer;
 
 class Crypt {
     constructor() {
         this.enc = new TextEncoder();
         this.iv = new Uint8Array(16);
-        let phpSessionIv = new Uint8Array(this.enc.encode(window.phpSession));
-        this.iv.set(phpSessionIv);
-        console.debug(this.iv)
+        let phpSessionIv = Uint8Array.from(this.enc.encode(window.phpSession)).subarray(0,16)
+        console.debug(phpSessionIv)
 
         this.pbkdf2Params = {
             name: "PBKDF2",
@@ -24,11 +26,15 @@ class Crypt {
         }
     }
     
+    get password() {
+        return sessionStorage.getItem("password");
+    }
+
     get gibber() {
         let gibber="";
         let uuid=window.crypto.randomUUID();
 
-        [uuid.toLowerCase(),window.phpSession.value.toLowerCase()].forEach(item => {
+        [uuid.toLowerCase(),window.phpSession.toLowerCase()].forEach(item => {
             const letters=item.toLowerCase().matchAll("[a-z]")
                 .toArray();
             
@@ -46,9 +52,9 @@ class Crypt {
         return gibber.substring(0,10);
     }
 
-    async encrypt(inputElem, outputElem) {
+    get key() {
         const password = this.password ? this.password : this.gibber
-        let key = await window.crypto.subtle.importKey(
+        return window.crypto.subtle.importKey(
             "raw",
             this.enc.encode(password),
             "PBKDF2",
@@ -61,30 +67,57 @@ class Crypt {
                 ["encrypt", "decrypt"]
             );
         });
-        window.crypto.subtle.encrypt(this.cryptParams,key,this.enc.encode(inputElem.value)).then(cipherdata => {
-            brotliCompress.compress(new Uint8Array(cipherdata)).then(compressed => {
-                compressed = this.enc.encode(compressed,"unicode").toHex();
+    }
+
+
+    async encrypt(inputElem, outputElem) {
+        const startTime = performance.now();
+        window.crypto.subtle.encrypt(this.cryptParams, await this.key, this.enc.encode(inputElem.value)).then(cipherdata => {
+            brotliCompress.compress( new Uint8Array(cipherdata) ).then(compressed => {
+                compressed = Buffer.from(this.enc.encode(compressed,"unicode")).toString("base64");
                 if(compressed.length > 264) { return }
                 outputElem.value = compressed;
+                console.debug("Compress finished","Char length:",compressed.length, performance.now() - startTime)
             });
+            console.debug("Encrypt finished", performance.now() - startTime)
         });
     }
 
     async decrypt(ciphertext) {
-        
+        const crDrata = sessionStorage.getItem("crypt_data");
+        const startTime = performance.now();
+        window.crypto.subtle.decrypt(this.cryptParams, await this.key, crDrata).then(cipherdata => {
+            brotliCompress.compress( new Uint8Array(cipherdata) ).then(compressed => {
+                compressed = Buffer.from(this.enc.encode(compressed,"unicode")).toString("base64");
+                if(compressed.length > 264) { return }
+                outputElem.value = compressed;
+                console.debug("Compress finished","Char length:",compressed.length, performance.now() - startTime)
+            });
+            console.debug("Encrypt finished", performance.now() - startTime)
+        });
     }
 }
+
+fetchEncryptedContent = async (shortCode) => fetch(configREDIRECT_URL)
 
 document.addEventListener("DOMContentLoaded", function(e) {
     try {
         //let linkhint = document.getElementsByClassName("success")[0]
         //linkhint.innerText = linkhint.innerText + "/" + crypt.getPrivateKeyB64();
-    } catch(e) {}
+    } catch(e) { console.log(e) }
+
+    window.phpSession = document.getElementById("session").content;
+
     window.c = new Crypt();
-    console.log(e)
+
+    const path = this.location.pathname;
+    if(path.includes("?s")) {
+        const uniqueCode = path.split("?s=")[1];
+        if(uniqueCode.length != 8) { return; }
+        
+        const password = path.split("&p=")[1];
+        if(password == undefined) { return; }
+
+        sessionStorage.setItem("password",password);
+    }
 });
-
-
-function decrypt_url(key) {
-    
-}
